@@ -1,0 +1,196 @@
+---
+title: "Chapter-6-Exercises"
+output: html_document
+date: "2026-01-27"
+---
+
+## GSE201427
+  1. **What type of data is it?  Describe it.**
+  ```
+  dbGetQuery(con, "select distinct * from gse JOIN gse_gpl ON gse.gse=gse_gpl.gse JOIN gpl ON gse_gpl.gpl=gpl.gpl where gse.gse= 'GSE201427'")
+  ```
+  This gives 0 rows, meaning that though there is an associated gpl value (GPL20301), it is not found in the gpl database. Searching on the GEO website, we can see that this corresponds to Illumina HiSeq 4000. 
+  
+  1. **What disease or model is it using?** (infer from series title/summary/platform organism)
+  ```
+  dbGetQuery(con, "select distinct * from gse where gse= 'GSE201427'")
+  ```
+  From the gpl and gse descriptions, this study is examining cancer (tumors) in humans. 
+  
+  1. **How many samples are there? What type of data is associated with the record?** 
+  ```
+  dbGetQuery(con, "select count(*) from gse JOIN gse_gsm ON gse.gse=gse_gsm.gse JOIN gsm ON gsm.gsm=gse_gsm.gsm where gse.gse= 'GSE201427'")
+  ```
+  There are 8 samples associated with this study. From this, we can identify 52 fields:
+  ```
+  [1] "ID"                     "title"                  "gse"                   
+ [4] "status"                 "submission_date"        "last_update_date"      
+ [7] "pubmed_id"              "summary"                "type"                  
+[10] "contributor"            "web_link"               "overall_design"        
+[13] "repeats"                "repeats_sample_list"    "variable"              
+[16] "variable_description"   "contact"                "supplementary_file"    
+[19] "gse"                    "gsm"                    "ID"                    
+[22] "title"                  "gsm"                    "series_id"             
+[25] "gpl"                    "status"                 "submission_date"       
+[28] "last_update_date"       "type"                   "source_name_ch1"       
+[31] "organism_ch1"           "characteristics_ch1"    "molecule_ch1"          
+[34] "label_ch1"              "treatment_protocol_ch1" "extract_protocol_ch1"  
+[37] "label_protocol_ch1"     "source_name_ch2"        "organism_ch2"          
+[40] "characteristics_ch2"    "molecule_ch2"           "label_ch2"             
+[43] "treatment_protocol_ch2" "extract_protocol_ch2"   "label_protocol_ch2"    
+[46] "hyb_protocol"           "description"            "data_processing"       
+[49] "contact"                "supplementary_file"     "data_row_count"        
+[52] "channel_count" 
+  ```
+  
+  1. **How many control and how many disease?** 
+  ```
+  dbGetQuery(con, "select * from gse JOIN gse_gsm ON gse.gse=gse_gsm.gse JOIN gsm ON gsm.gsm=gse_gsm.gsm where gse.gse= 'GSE201427' and gsm.title like '%ctrl%'")
+  ```
+  Since there are 5 controls, there are 3 disease samples. 
+
+
+## GSE166530
+  1. **What type of data is it?  Describe it.**
+  ```
+  dbGetQuery(con, "select distinct * from gse JOIN gse_gpl ON gse.gse=gse_gpl.gse JOIN gpl ON gse_gpl.gpl=gpl.gpl where gse.gse= 'GSE166530'")
+  ```
+  This gives 0 rows, meaning that though there is an associated gpl value (GPL24676), it is not found in the gpl database. Searching on the GEO website, we can see that this corresponds to Illumina HiSeq 6000. 
+  
+  1. **What disease or model is it using?** (infer from series title/summary/platform organism)
+  ```
+  dbGetQuery(con, "select distinct * from gse where gse= 'GSE166530'")
+  ```
+  From the gpl and gse descriptions, this study is examining COVID-19 in humans. 
+  
+  1. **How many samples are there? What type of data is associated with the record?** 
+  ```
+  dbGetQuery(con, "select count(*) from gse JOIN gse_gsm ON gse.gse=gse_gsm.gse JOIN gsm ON gsm.gsm=gse_gsm.gsm where gse.gse= 'GSE166530'")
+  ```
+  There are 41 samples associated with this study. From this, we can identify 52 fields:
+  ```
+  [1] "ID"                     "title"                  "gse"                   
+ [4] "status"                 "submission_date"        "last_update_date"      
+ [7] "pubmed_id"              "summary"                "type"                  
+[10] "contributor"            "web_link"               "overall_design"        
+[13] "repeats"                "repeats_sample_list"    "variable"              
+[16] "variable_description"   "contact"                "supplementary_file"    
+[19] "gse"                    "gsm"                    "ID"                    
+[22] "title"                  "gsm"                    "series_id"             
+[25] "gpl"                    "status"                 "submission_date"       
+[28] "last_update_date"       "type"                   "source_name_ch1"       
+[31] "organism_ch1"           "characteristics_ch1"    "molecule_ch1"          
+[34] "label_ch1"              "treatment_protocol_ch1" "extract_protocol_ch1"  
+[37] "label_protocol_ch1"     "source_name_ch2"        "organism_ch2"          
+[40] "characteristics_ch2"    "molecule_ch2"           "label_ch2"             
+[43] "treatment_protocol_ch2" "extract_protocol_ch2"   "label_protocol_ch2"    
+[46] "hyb_protocol"           "description"            "data_processing"       
+[49] "contact"                "supplementary_file"     "data_row_count"        
+[52] "channel_count" 
+  ```
+  
+  1. **How many control and how many disease?** 
+  ```
+  dbGetQuery(con, "select * from gse JOIN gse_gsm ON gse.gse=gse_gsm.gse JOIN gsm ON gsm.gsm=gse_gsm.gsm where gse.gse= 'GSE166530' and gsm.title like '%Negative%'")
+  ```
+  Since there are 5 controls, there are 36 disease samples. 
+
+
+
+## GSE162183
+  1. **What type of data is it?  Describe it.**
+  ```
+  dbGetQuery(con, "select distinct * from gse JOIN gse_gpl ON gse.gse=gse_gpl.gse JOIN gpl ON gse_gpl.gpl=gpl.gpl where gse.gse= 'GSE162183'")
+  ```
+  This gives 0 rows, meaning that though there is an associated gpl value (GPL24676), it is not found in the gpl database. Based on the previous answer, we know that this is the Illumina HiSeq 6000. 
+  
+  1. **What disease or model is it using?** (infer from series title/summary/platform organism)
+  ```
+  dbGetQuery(con, "select distinct * from gse where gse= 'GSE162183'")
+  ```
+  From the gpl and gse descriptions, this study is examining psoriasis in humans. 
+  
+  1. **How many samples are there? What type of data is associated with the record?** 
+  ```
+  dbGetQuery(con, "select count(*) from gse JOIN gse_gsm ON gse.gse=gse_gsm.gse JOIN gsm ON gsm.gsm=gse_gsm.gsm where gse.gse= 'GSE162183'")
+  ```
+  There are 6 samples associated with this study. From this, we can identify 52 fields:
+  ```
+  [1] "ID"                     "title"                  "gse"                   
+ [4] "status"                 "submission_date"        "last_update_date"      
+ [7] "pubmed_id"              "summary"                "type"                  
+[10] "contributor"            "web_link"               "overall_design"        
+[13] "repeats"                "repeats_sample_list"    "variable"              
+[16] "variable_description"   "contact"                "supplementary_file"    
+[19] "gse"                    "gsm"                    "ID"                    
+[22] "title"                  "gsm"                    "series_id"             
+[25] "gpl"                    "status"                 "submission_date"       
+[28] "last_update_date"       "type"                   "source_name_ch1"       
+[31] "organism_ch1"           "characteristics_ch1"    "molecule_ch1"          
+[34] "label_ch1"              "treatment_protocol_ch1" "extract_protocol_ch1"  
+[37] "label_protocol_ch1"     "source_name_ch2"        "organism_ch2"          
+[40] "characteristics_ch2"    "molecule_ch2"           "label_ch2"             
+[43] "treatment_protocol_ch2" "extract_protocol_ch2"   "label_protocol_ch2"    
+[46] "hyb_protocol"           "description"            "data_processing"       
+[49] "contact"                "supplementary_file"     "data_row_count"        
+[52] "channel_count" 
+  ```
+  
+  1. **How many control and how many disease?** 
+  ```
+  dbGetQuery(con, "select * from gse JOIN gse_gsm ON gse.gse=gse_gsm.gse JOIN gsm ON gsm.gsm=gse_gsm.gsm where gse.gse= 'GSE162183' and gsm.title like '%Negative%'")
+  ```
+  Since there are 3 controls, there are 3 disease samples. This is corroborated by searching the same query for "psoriasis".
+
+
+
+## GSE186458
+  1. **What type of data is it?  Describe it.**
+  ```
+  dbGetQuery(con, "select distinct * from gse JOIN gse_gpl ON gse.gse=gse_gpl.gse JOIN gpl ON gse_gpl.gpl=gpl.gpl where gse.gse= 'GSE186458'")
+  ```
+  This gives 0 rows, meaning that though there is an associated gpl value (GPL24676), it is not found in the gpl database. Based on the previous answer, we know that this is the Illumina HiSeq 6000. 
+  
+  1. **What disease or model is it using?** (infer from series title/summary/platform organism)
+  ```
+  dbGetQuery(con, "select distinct * from gse where gse= 'GSE186458'")
+  ```
+  From the gpl and gse descriptions, this study is trying to create an atlas of DNA methylation in humans (so it is not examining a disease). 
+  
+  1. **How many samples are there? What type of data is associated with the record?** 
+  ```
+  dbGetQuery(con, "select count(*) from gse JOIN gse_gsm ON gse.gse=gse_gsm.gse JOIN gsm ON gsm.gsm=gse_gsm.gsm where gse.gse= 'GSE186458'")
+  ```
+  There are 253 samples associated with this study. From this, we can identify 52 fields:
+  ```
+  [1] "ID"                     "title"                  "gse"                   
+ [4] "status"                 "submission_date"        "last_update_date"      
+ [7] "pubmed_id"              "summary"                "type"                  
+[10] "contributor"            "web_link"               "overall_design"        
+[13] "repeats"                "repeats_sample_list"    "variable"              
+[16] "variable_description"   "contact"                "supplementary_file"    
+[19] "gse"                    "gsm"                    "ID"                    
+[22] "title"                  "gsm"                    "series_id"             
+[25] "gpl"                    "status"                 "submission_date"       
+[28] "last_update_date"       "type"                   "source_name_ch1"       
+[31] "organism_ch1"           "characteristics_ch1"    "molecule_ch1"          
+[34] "label_ch1"              "treatment_protocol_ch1" "extract_protocol_ch1"  
+[37] "label_protocol_ch1"     "source_name_ch2"        "organism_ch2"          
+[40] "characteristics_ch2"    "molecule_ch2"           "label_ch2"             
+[43] "treatment_protocol_ch2" "extract_protocol_ch2"   "label_protocol_ch2"    
+[46] "hyb_protocol"           "description"            "data_processing"       
+[49] "contact"                "supplementary_file"     "data_row_count"        
+[52] "channel_count" 
+  ```
+  
+  1. **How many control and how many disease?** 
+  Since this study is not examining a specific disease, there are no clear "control" vs. "disease" samples (since each sample is being examined for its methylation profile).
+
+
+
+# GSE264108
+The query
+```
+dbGetQuery(con, "select * from gse where gse = 'GSE264108'")
+```
+reveals 0 results. However, looking at the web GEO Accession Viewer, it corresponds to a study titled "	Triple-Negative Breast Cancer Shapes the Systemic Immune Landscape and Alters Neutrophil Functionality" released in  2025 by Bakker et al. It is possible that this could be due to how recent it is.  
