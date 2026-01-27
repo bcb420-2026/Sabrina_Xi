@@ -1,0 +1,2 @@
+# Exercise_data_normalization
+exercise exploring normalizion
