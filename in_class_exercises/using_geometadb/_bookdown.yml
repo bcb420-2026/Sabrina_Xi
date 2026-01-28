@@ -1,5 +1,5 @@
 book_filename: geometadb-tutorial
-output_dir: "docs"
+output_dir: "../../docs/using_geometadb"
 language:
   ui:
     chapter_name: "Chapter "
@@ -11,5 +11,5 @@ rmd_files:
   - 04-exploring-platforms.Rmd
   - 05-finding-datasets.Rmd
   - 06-exercises.Rmd
-  - 07-exercises_answered.Rmd
+  - 07-exercises-answers.Rmd
   - 08-next-steps.Rmd

@@ -1,5 +1,5 @@
 ---
-title: "Chapter-6-Exercises"
+title: "07-exercises-answers.Rmd"
 output: html_document
 date: "2026-01-27"
 ---
@@ -188,7 +188,7 @@ date: "2026-01-27"
 
 
 
-# GSE264108
+## GSE264108
 The query
 ```
 dbGetQuery(con, "select * from gse where gse = 'GSE264108'")
