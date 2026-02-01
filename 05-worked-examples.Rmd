@@ -7,17 +7,24 @@ We will demonstrate exploratory normalization steps on the expression datasets.
 ## load Some data
 
 
-```{r get_data}
+```{r get_data, include=FALSE}
+
+knitr::opts_chunk$set(
+  warning = FALSE,
+  message = FALSE
+)
+
+
 library(GEOquery)
 library(knitr)
 library(dplyr)
 library(tibble)
 if(!require(tidyverse)){
-  install.packages("tidyvers",dependencies = FALSE)
+  install.packages("tidyverse",dependencies = TRUE)
 }
 library(tidyverse)
 
-gse <- "GSE119732"
+gse <- "GSE233947"
 
 source("./supp_functions.R")
 fetch_geo_supp(gse = gse)
@@ -127,8 +134,8 @@ colnames(x)
 
 #design matrix - 
 samples <- colnames(x)[2:ncol(x)]
-patient  <- substr(samples, 1, 1)       
-celltype <- substr(samples, 2, nchar(samples))   
+patient  <- unlist(lapply(samples,FUN = function(x){unlist(strsplit(x,split = "_"))[2]}))       
+celltype <- unlist(lapply(samples,FUN = function(x){unlist(strsplit(x,split = "_"))[3]}))     
 sample_data <- data.frame(samples, patient, celltype)
 
 
@@ -143,11 +150,16 @@ design
 Filter use design information
 
 ```{r}
-to_remove_withdesign <- edgeR::filterByExpr(x_cpm,min.count = 3,
+to_remove_withdesign <- edgeR::filterByExpr(x_cpm,
+                                            min.count = 3,
                                             design = design)
 x_cpm_filtered_withdesign <- x_cpm[to_remove_withdesign,]
 
-plot_box(x_cpm_filtered_withdesign,main = "CPM filtered out lowly expressed - \n - with design matrix")
+colnames(x_cpm_filtered_withdesign ) <- paste(sample_data$celltype,
+                                              1:nrow(sample_data),sep = "_")
+
+plot_box(x_cpm_filtered_withdesign,
+         main = "CPM filtered out lowly expressed - \n - with design matrix")
 ```
 
 ```{r}
@@ -201,7 +213,7 @@ plot_density(norm_cpm)
 
 y <- dge_filtered
 
-plotMDS(y, top = 500, labels = colnames(y), 
+plotMDS(y, top = 500, labels = sample_data$celltype,#colnames(y), 
        col = as.integer(y$samples$group))
 legend("topright", legend = levels(y$samples$group),
        col = seq_along(levels(y$samples$group)), pch = 16, bty = "n")
@@ -227,7 +239,7 @@ plot_density(norm_cpm)
 
 y <- dge_filtered
 
-plotMDS(y, top = 500, labels = colnames(y), 
+plotMDS(y, top = 500, labels = sample_data$patient,#  colnames(y), 
        col = as.integer(y$samples$group))
 legend("topright", legend = levels(y$samples$group),
        col = seq_along(levels(y$samples$group)), pch = 16, bty = "n")
