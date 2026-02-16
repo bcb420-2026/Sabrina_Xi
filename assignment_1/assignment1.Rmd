@@ -33,6 +33,8 @@ if (!require("BiocManager", quietly = TRUE))
     BiocManager::install("biomaRt")
     BiocManager::install("edgeR")
     BiocManager::install("DESeq2")
+    install.packages("tidyr")
+    install.packages("dplyr")
 
 # get GEO data
 dir.create("data", showWarnings = FALSE)
