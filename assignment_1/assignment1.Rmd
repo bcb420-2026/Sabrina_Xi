@@ -59,20 +59,6 @@ group = c("NT", "NT", "NT", "NT", "NT", "NT", "NT", "NT", "NT", "NT", "NT", "NT"
 sample_cond = data.frame(sample = col_order[-1], condition = group)
 ```
 
-Additional supplementary files existed for this study, which examined resistance to TB testing. 
-```{r}
-# Additional experiments done with IFN/
-counts_file <- file.path("data", "GSE236156", "GSE236156_MDM.IFN.counts.csv.gz")
-stopifnot(file.exists(counts_file))
-
-fc_ifn <- readr::read_csv(counts_file, show_col_types = FALSE)
-
-# Additional cryo reads 
-counts_file <- file.path("data", "GSE236156", "GSE236156_AM.cryo.counts.csv.gz")
-stopifnot(file.exists(counts_file))
-
-fc_cryo <- readr::read_csv(counts_file, show_col_types = FALSE)
-```
 
 ## 2.2 Initial data exploration and summary
 

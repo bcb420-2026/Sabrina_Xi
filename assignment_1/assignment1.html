@@ -1821,19 +1821,6 @@ raw_counts &lt;- raw_counts[, col_order]
 group = c(&quot;NT&quot;, &quot;NT&quot;, &quot;NT&quot;, &quot;NT&quot;, &quot;NT&quot;, &quot;NT&quot;, &quot;NT&quot;, &quot;NT&quot;, &quot;NT&quot;, &quot;NT&quot;, &quot;NT&quot;, &quot;NT&quot;, &quot;TB&quot;, &quot;TB&quot;, &quot;TB&quot;, &quot;TB&quot;, &quot;TB&quot;, &quot;TB&quot;, &quot;TB&quot;, &quot;TB&quot;, &quot;TB&quot;, &quot;TB&quot;, &quot;TB&quot;, &quot;TB&quot;)
 
 sample_cond = data.frame(sample = col_order[-1], condition = group)</code></pre>
-<p>Additional supplementary files existed for this study, which examined
-resistance to TB testing.</p>
-<pre class="r"><code># Additional experiments done with IFN/
-counts_file &lt;- file.path(&quot;data&quot;, &quot;GSE236156&quot;, &quot;GSE236156_MDM.IFN.counts.csv.gz&quot;)
-stopifnot(file.exists(counts_file))
-
-fc_ifn &lt;- readr::read_csv(counts_file, show_col_types = FALSE)
-
-# Additional cryo reads 
-counts_file &lt;- file.path(&quot;data&quot;, &quot;GSE236156&quot;, &quot;GSE236156_AM.cryo.counts.csv.gz&quot;)
-stopifnot(file.exists(counts_file))
-
-fc_cryo &lt;- readr::read_csv(counts_file, show_col_types = FALSE)</code></pre>
 </div>
 <div id="initial-data-exploration-and-summary" class="section level2">
 <h2>2.2 Initial data exploration and summary</h2>
