@@ -1,0 +1,520 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    toc: true
+    toc_depth: '2'
+    df_print: paged
+---
+
+# Assignment 1: Dataset Selection, Cleaning, and Scoring
+## Sabrina Xi
+
+# Data Selection
+
+## 1.1 Experimental information
+
+I chose the dataset [GSE236156](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE236156). This dataset comes from the study "Epigenetic programming of host lipid metabolism associates with resistance to TST/IGRA conversion after exposure to Mycobacterium tuberculosis" which examines the effect of prolonged exposure to Mycobacterium tuberculosis (Mtb), the pathogen responsible for tuberculosis (TB), on alveolar macrophages (AMs) and recruited monocyte-derived macrophages (MDMs) which mediate the early lung immune response to Mtb. The resulting RNA-seq gene expression data of both AMs and MDMs upon treatment with and without Mtb composes this dataset. In the course of my previous research experiences, I have had some exposure to tuberculosis and tuberculosis screening, which intially attracted me to this study. The additional findings on TB resistance further attracted my attention (though those results are not included herein). 
+
+Control values in the dataset included the growth method and media. Test conditions included treatment/lack of treatment of Mtb and cell type (AM and MDM). There were 6 replicates for each combination of cell type and treatment, so 12 replicates for treatment/lack of treatment, which is the experimental condition we are interested in exploring herein. 
+
+
+# Data Cleaning
+
+## 2.1 Data download from GEO
+
+The data was downloaded from GEO through the package ```GEOquery``` as a ```.csv``` (Davis and Meltzer 2007). The raw data count was downloaded through the associated supplementary file found with this project, which was readily available. 
+```{r}
+# install packages if necessary
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+    BiocManager::install("GEOquery")
+    BiocManager::install("ComplexHeatmap")
+    BiocManager::install("biomaRt")
+    BiocManager::install("edgeR")
+    BiocManager::install("DESeq2")
+
+# get GEO data
+dir.create("data", showWarnings = FALSE)
+
+supp <- GEOquery::getGEOSuppFiles(
+  "GSE236156",
+  makeDirectory = TRUE,
+  baseDir = "data"
+)
+
+counts_file <- file.path("data", "GSE236156", "GSE236156_AM.MDM.Mtb.counts.csv.gz")
+stopifnot(file.exists(counts_file))
+
+raw_counts <- readr::read_csv(counts_file, show_col_types = FALSE)
+
+# reorder the columns names by test condition
+col_order <- c("ensembl_gene_id",  "AM10_AM_Media", "AM12_AM_Media", "AM15_AM_Media", "AM17_AM_Media", "AM18_AM_Media", "AM19_AM_Media", "AM10_MDM_Media",  "AM12_MDM_Media", "AM15_MDM_Media", "AM17_MDM_Media", "AM18_MDM_Media", "AM19_MDM_Media", "AM10_AM_TB", "AM12_AM_TB", "AM15_AM_TB", "AM17_AM_TB", "AM18_AM_TB", "AM19_AM_TB", "AM10_MDM_TB", "AM12_MDM_TB", "AM15_MDM_TB", "AM17_MDM_TB", "AM18_MDM_TB", "AM19_MDM_TB")
+
+raw_counts <- raw_counts[, col_order]
+
+# define a dataframe containing the experimental condition for each sample
+group = c("NT", "NT", "NT", "NT", "NT", "NT", "NT", "NT", "NT", "NT", "NT", "NT", "TB", "TB", "TB", "TB", "TB", "TB", "TB", "TB", "TB", "TB", "TB", "TB")
+
+sample_cond = data.frame(sample = col_order[-1], condition = group)
+```
+
+Additional supplementary files existed for this study, which examined resistance to TB testing. 
+```{r}
+# Additional experiments done with IFN/
+counts_file <- file.path("data", "GSE236156", "GSE236156_MDM.IFN.counts.csv.gz")
+stopifnot(file.exists(counts_file))
+
+fc_ifn <- readr::read_csv(counts_file, show_col_types = FALSE)
+
+# Additional cryo reads 
+counts_file <- file.path("data", "GSE236156", "GSE236156_AM.cryo.counts.csv.gz")
+stopifnot(file.exists(counts_file))
+
+fc_cryo <- readr::read_csv(counts_file, show_col_types = FALSE)
+```
+
+## 2.2 Initial data exploration and summary
+
+To assess data quality and variability, we can first look at the dataset. 
+```{r}
+rmarkdown::paged_table(raw_counts[1:6, ])
+```
+**Table 1.** Raw counts for GSE236156 downloaded from GEO.
+
+We can see that the dataset contains the requisite columns for each of our 6 replicates. We can also note that it contains the ensembl gene stable ID, which can be used to identify the corresponding gene. We can find that there are no NA values in the dataset. To further assess the dataset, we can also compute some summary statistics. 
+```{r, eval = TRUE}
+summary_stats <- summary(raw_counts[, -1])
+summary_stats
+```
+
+We can also see the number of genes expressed for each replicate, which is relatively consistent. 
+```{r}
+gene_found <- colSums(raw_counts[-1] > 0)
+rmarkdown::paged_table(as.data.frame(gene_found))
+```
+**Table 2. Detected genes per sample.**
+
+From our initial assessment, we can find that there are no large outliers, aligning with the findings from the paper (Dill-McFarland et al. 2024). While samples do show some natural variation, this will be corrected for in normalization. We can also see that each replicate can be handled independently.
+
+
+## 2.3 ID mapping
+
+From our initial data assessment, we know that the original dataset contains the stable ensembl gene IDs. We map these IDs to the HGNC symbols (Seal et al. 2023), which can be done using the ```biomaRt``` (Durinck et al. 2005) package. 
+```{r}
+library(biomaRt)
+library(dplyr)
+library(tidyr)
+
+# load in the data if already saved; for the purposes of this assignment
+cache_file <- "id_conversion.rds"
+if (file.exists(cache_file)) {
+  map <- readRDS(cache_file)
+} else {
+  # load in the ensembl mart
+  # Note: other marts were previously examined, and this one was concluded to be most appropriate
+  ensembl <- biomaRt::useMart("ensembl")
+
+  map <- biomaRt::getBM(
+    attributes = c("ensembl_gene_id", "hgnc_symbol"),
+    filters = "ensembl_gene_id",
+    values = raw_counts$ensembl_gene_id,
+    mart = ensembl
+  )
+  saveRDS(map, cache_file)
+}
+
+# map the HGNC symbols by joining the mapping dataset to the raw counts dataset 
+df_annot <- left_join(raw_counts, map, by = "ensembl_gene_id")
+```
+
+From the resulting mapping, we deal with two cases: one where genes are not mapped to an HGNC symbol and one where there are duplicate HGNC mappings. We find that 519 values were not mapped to an HGNC symbol, and since further attempts to find mappings for these genes were not successful, these values were removed from the dataset. We also found 2 HGNC symbols which saw 3 duplicates in mapping. A cursory observation of these two duplicates found a corresponding rows with very low count close to 0, so the higher count duplicate was kept.
+```{r}
+# summarize HGNC mapping success in this dataset
+hgnc_summary <- summary(df_annot$hgnc_symbol == "")
+
+# identify duplicate HGNC mapping
+df_annot[duplicated(df_annot$hgnc_symbol) & df_annot$hgnc_symbol != "" & !is.na(df_annot$hgnc_symbol), ]$hgnc_symbol
+```
+
+
+## 2.4 Data Cleaning
+
+Now that the dataset has been explored, we proceed to the final steps of data cleaning. We filtered out for genes that were lowly expressed (defined as genes having counts greater than 0) and rows with NA values. We also removed duplicate or incomplete HGNC mappings. As there were no clear outliers, there was no removal of outliers for fear of obscuring potentially significant gene differential expression. The final clean count of genes was 177,776.
+```{r}
+df_cleaned <- na.omit(df_annot)
+df_cleaned <- df_cleaned[rowSums(df_cleaned[, 2:25]) > 0, ]
+df_cleaned <- df_cleaned[df_cleaned$hgnc_symbol != "", ]
+
+# remove rows with duplicate HGNC symbbols by keeping the row with the highest row sum
+data_ordered <- df_cleaned[order(rowSums(df_cleaned[, 2:25]), decreasing = TRUE), ]
+df_cleaned <- data_ordered[!duplicated(data_ordered$hgnc_symbol), ]
+
+# add hgnc symbols as row names and remove gene and hgnc symbol columns
+df_cleaned <- as.data.frame(df_cleaned)
+row.names(df_cleaned) <- df_cleaned$hgnc_symbol
+df_cleaned$ensembl_gene_id <- NULL
+df_cleaned$hgnc_symbol <- NULL
+```
+
+
+# Data Normalization
+
+# 3.1 Plotting the Distribution Pre-Normalization
+
+From our exploration, we see that there is variation in the dataset that may reflect technical effects. We can apply normalization techniques to reduce this unwanted signal that obscures the signal we desire to see. We can observe this variation by plotting the distributions of the dataset before normalization and use it to later verify the effects of normalization.
+```{r}
+library(ggplot2)
+
+# define a plot boxplot function
+plot_boxplot <- function(input_data, main_title = "Boxplot of Read Counts") {
+  df <- as.data.frame(input_data)
+  df_long <- df |>
+    mutate(gene = rownames(df)) |>
+    pivot_longer(-gene, names_to = "sample", values_to = "value") |>
+    mutate(value = log2(value + 1)) 
+  
+  df_long <- left_join(df_long, sample_cond, by = "sample")
+  
+  ggplot(df_long, aes(x = sample, y = value, fill = condition)) +
+    geom_boxplot(outlier.size = 0.2) +
+    geom_hline(yintercept=median(df_long$value), linetype="dashed", color="white") + 
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+    labs(title = main_title, x = "Sample", y = "log2(counts+1)")
+}
+
+# define a plot density function
+plot_density <- function(input_data, main_title = "Density Function of Read Counts") {
+  df <- as.data.frame(input_data)
+  df_long <- df |>
+    mutate(gene = rownames(df)) |>
+    pivot_longer(-gene, names_to = "sample", values_to = "value") |>
+    mutate(value = log2(value + 1))
+  
+  ggplot(df_long, aes(x = value, colour = sample)) +
+    geom_density() +
+    theme_bw() +
+    labs(title = main_title, x = "log2(counts+1)", y = "Density")
+}
+```
+
+```{r}
+# check boxplot distribution of the current dataset
+plot_boxplot(df_cleaned, "Figure 1. Boxplot of Raw Read Counts from Dataset GSE236156")
+```
+**Figure 1.** Boxplot of the log raw read counts derived from the dataset GSE236156 representing the gene expression distribution. Each vertical label represents a sample. Pink boxes indicate replicates that have not been treated with Mtb, while blue boxes represent samples that have. The white line represents the overall median. 
+
+```{r}
+# check density distribution of the current dataset
+plot_density(df_cleaned, "Figure 2. Density Function of Raw Read Counts from Dataset GSE236156")
+```
+**Figure 2.** Density function representation of the log raw read counts derived from the dataset GSE236156 representing the gene expression distribution. Each coloured line represents a sample. 
+
+From this distribution, we can notice that there is some lack of alignment between samples, as evidenced by the slight variation in medians between each other and from the global median line and each quartile. From the density function, we can also see some discrepancies in density between samples, such as the sample "AM19_AM_Media". While the data is overall relatively consistent, there is still room to correct for technical noises to prevent biases in our downstream analysis.
+
+
+## 3.2 Normalize using TMM
+
+Normalization is a key step in the analysis pipeline, accounting for technical variation that does not stem from differential expression. While our exploration above shows that there is not significant differences in library size, we still see differences likely attributed to inherent technical factors such as batch effects. To account for these differences, we can normalize using the Trimmed Mean of M-values (TMM) method (Robinson and Oshlack 2010). This method scales factors to ensure comparable expression levels across our different samples and accounts for extremes (Singh et al. 2024). This method was selected compared to the Relative Log Expression (RLE) method implemented by DESeq2 (Love et al. 2014) due to shown similar results on real and simulated datasets (Maza 2016) while additionally accounting for library size. 
+
+To visualize our normalized data, we use the counts per million (CPM) method. We can use the ```edgeR``` package (Chen et al. 2025) to do so. We initialize a DGEList object containing information on the study design, normalize using TMM, and visualize after applying the CPM method. 
+```{r}
+library(edgeR)
+library(DESeq2)
+
+# write as matrix
+counts <- as.matrix(df_cleaned)
+
+# create metadata
+samples <- colnames(counts)
+cellline  <- unlist(lapply(samples, FUN =
+                             function(x){unlist(strsplit(x,split = "_"))[2]}))       
+treatment <- unlist(lapply(samples, FUN = 
+                             function(x){unlist(strsplit(x,split = "_"))[3]}))     
+meta <- data.frame(samples, cellline, treatment)
+
+# create DGEList
+dge <- edgeR::DGEList(counts = counts)
+dge$samples <- cbind(dge$samples, meta)
+
+# create design matrix
+design <- model.matrix(~ 0 + treatment + cellline, data = meta)
+
+# filter out lowly expressed genes 
+dge_f <- dge[edgeR::filterByExpr(dge, design), ]
+
+# normalize using TMM method
+dge_f <- edgeR::calcNormFactors(dge_f, method = "TMM")
+
+# apply cpm method 
+norm_cpm <- edgeR::cpm(dge_f, log = FALSE, prior.count = 1)
+
+plot_boxplot(norm_cpm, "Figure 3. Boxplot of Normalized Read Counts from Dataset GSE236156")
+```
+**Figure 3.** Boxplot of normalized log read counts from dataset GSE236156 using the TMM and CPM methods representing the gene expression distribution. Each vertical label represents a sample. Pink boxes indicate replicates that have not been treated with Mtb, while blue boxes represent samples that have. The white line represents the overall median.
+
+```{r}
+plot_density(norm_cpm, "Figure 4. Density Function of Normalized Read Counts from Dataset GSE236156")
+```
+**Figure 2.** Density function representation of the normalized raw read counts derived from the dataset GSE236156 using the TMM and CPM methods representing the gene expression distribution. Each coloured line represents a sample. 
+
+From our figures, such as the aligned medians in Figure 3, we can see that normalization has had a consistent effect on the dataset. 
+
+
+## 3.3 Visualize Clustering using MDS
+
+Before we proceed to differential gene expression analysis, we can visualize clustering within the dataset using Multi-Dimensional Scaling (MDS).
+```{r}
+# bind the experimental condition to sample
+cond <- sample_cond$condition
+dge_f$samples <- cbind(dge_f$samples, cond)
+
+# create a MDS plot clustering samples
+plotMDS(dge_f, labels = dge_f$samples$samples, col = ifelse(dge_f$samples$cond == "NT", "pink", "lightblue"), main = "Figure 5. MDS Clustering by Sample")
+legend("topleft", legend = levels(factor(dge_f$samples$cond)), col = c("pink", "lightblue"), pch = 16, bty = "n")
+```
+**Figure 5.** MDS plot of dataset GSE236156 clustered by cell Type. Pink points represent samples not exposed to Mtb while light blue points represent samples exposed to Mtb. Samples are labeled by name. 
+
+```{r}
+plotMDS(dge_f, labels = dge_f$samples$samples, col = ifelse(dge_f$samples$cellline == "AM", "lightgoldenrod1", "plum1"), main = "Figure 6. MDS Clustering by Cell Type")
+legend("topleft", legend = levels(factor(dge_f$samples$cellline)), col = c("lightgoldenrod1", "plum1"), pch = 16, bty = "n")
+```
+**Figure 6.** MDS plot of dataset GSE236156 clustered by cell Type. Yellow points represent samples using AMs while pink points represent samples using MDMs. Samples are labeled by name. 
+
+We can see clear clustering based on experimental condition, particularly along the second axis. However, it is also interesting to note that there is also clustering along cell type, which may show further in our differential gene expression analysis.
+
+
+# Differential Expression Analysis
+
+## 4.1 Differential Analysis using DESeq2
+
+After normalization, we can now conduct an analysis of differential expression between our two conditions. We can do so using the package ```DESeq2``` (Love et al. 2014). This was selected because of its suitability for datasets with a moderate sample size (in our case, being 12), compared to similar packages such as ```limma``` (Ritchie et al. 2015) and ```edgeR``` (Chen et al. 2025) which is more suitable for smaller sample sizes. 
+
+We use the Wald test for the ```DESeq``` method, which is the default for this method. Multiple hypothesis testing correction is conducted using the Benjamini-Hochberg method, which controls the false discovery rate (FDR) without being overly stringent (Benjamini and Hochberg 1995). We set the p-value cutoff for 0.05 from the default, for more stringent significance. 
+```{r}
+library(DESeq2)
+
+# create matrix for DESeq using processed dataset
+count_mat <- dge_f$counts
+stopifnot(all(colnames(count_mat) == meta$sample))
+
+dds <- DESeq2::DESeqDataSetFromMatrix(
+  countData = count_mat,
+  colData = as.data.frame(meta),
+  design = ~ cellline + treatment
+)
+
+# apply the default Wald test
+dds <- DESeq2::DESeq(dds, test = "Wald")
+
+# extract differential expression analysis results
+# additionally apply multiple hypothesis testing correction
+tb_vs_media <- DESeq2::results(dds, 
+                       contrast = c("treatment", "Media", "TB"), 
+                       alpha = 0.05, 
+                       pAdjustMethod = "BH", 
+                       cooksCutoff = TRUE,
+                       independentFiltering = TRUE)
+
+# look at summary
+tbm_summary <- summary(tb_vs_media)
+
+# find significantly differentially expressed genes
+tbm_df <- as.data.frame(tb_vs_media)
+sig_res <- tbm_df |> filter(!is.na(padj)) |> filter(padj < 0.05 & abs(log2FoldChange) >= 1)
+
+diff_exp <- nrow(sig_res)
+```
+
+Using this method, we find strictly differentially expressed gene hits. We define this criteria by limiting for genes where FDR < 0.05 and the log-fold change is greater than or equal to 1, for at least 2-fold change. 965 genes were found to pass this threshold. 
+
+
+## 4.1 Multiple Hypothesis Testing Correction
+```{r}
+mhtc <- sum(tb_vs_media$padj < 0.05, na.rm=TRUE)
+```
+
+As mentioned above, the Benjamini-Hochberg method was applied for multiple hypothesis testing correction. 5134 genes passed multiple testing correction. 
+
+
+## 4.3 Volcano Plot Visualization
+
+```{r}
+library(tibble)
+
+volcano_plot <- as.data.frame(tb_vs_media) |>
+  rownames_to_column("gene") |>
+  mutate(
+    neglog10p = -log10(pvalue),
+    direction = ifelse(!is.na(padj) & padj < 0.05, ifelse(log2FoldChange > 0, "Up", ifelse(log2FoldChange < 0, "Down", "Not significant")), "Not significant")
+  )
+
+ggplot(volcano_plot, aes(x = log2FoldChange, y = neglog10p)) +
+  geom_point(aes(color = direction), alpha = 0.7, size = 1.2) +
+  scale_color_manual(values = c(Up = "pink", Down = "lightblue", `Not significant` = "grey70")) +
+  theme_minimal() +
+  labs(title = "Figure 7. Volcano Plot of Differential Expression", x = "log2 FC", y = "-log10(FDR)", color = NULL)
+```
+**Figure 7.** Volcano plot of differential expression. Highlighted points expressed differential expression based on abs(log2-fold change) > 0 and significance in FDR < 0.05.
+
+We can also visualize this plot using our stricter threshold for log-fold change. 
+```{r}
+volcano_plot <- as.data.frame(tb_vs_media) |>
+  rownames_to_column("gene") |>
+  mutate(
+    neglog10p = -log10(pvalue),
+    direction = ifelse(!is.na(padj) & padj < 0.05, ifelse(log2FoldChange > 1, "Up", ifelse(log2FoldChange < -1, "Down", "Not significant")), "Not significant")
+  )
+
+ggplot(volcano_plot, aes(x = log2FoldChange, y = neglog10p)) +
+  geom_point(aes(color = direction), alpha = 0.7, size = 1.2) +
+  scale_color_manual(values = c(Up = "pink", Down = "lightblue", `Not significant` = "grey70")) +
+  theme_minimal() +
+  labs(title = "Figure 8. Volcano Plot of Singificant Differential Expression", x = "log2 FC", y = "-log10(FDR)", color = NULL)
+```
+**Figure 8.** Volcano plot of differential expression. Highlighted points expressed differential expression based on abs(log2-fold change) > 1  and significance in FDR < 0.05.
+
+
+## 4.4 Heatmap Visualization
+
+We can visualization top hits using a heatmap, using the package ```ComplexHeatmap``` (Gu 2016).
+```{r}
+library(ComplexHeatmap)
+library(circlize)
+
+# find top hits for expression change
+ordered_tmb <- tbm_df[order(abs(tbm_df$log2FoldChange), decreasing = FALSE), ]
+top_rows <- rownames(ordered_tmb[1:100, ])
+
+# find counts for these genes
+dge_top <- dge_f[top_rows, ]
+
+# color 
+heatmap_matrix <- t(scale(t(dge_top$counts)))
+if(min(heatmap_matrix) == 0){
+    heatmap_col = circlize::colorRamp2(c(0, max(heatmap_matrix)), 
+                      c("white", "red"))
+  } else {
+    heatmap_col = circlize::colorRamp2(c(min(heatmap_matrix), 0,
+        max(heatmap_matrix)), c("blue", "white", "red"))
+  }
+
+# create annotation for heatmap
+cond_col = rainbow(n = 2)
+names(cond_col) <- c("NT", "TB")
+
+cell_col = rainbow(n = 2)
+names(cell_col) <- c("AM", "MDM")
+
+hmp_ann <- ComplexHeatmap::HeatmapAnnotation(
+  df = data.frame(condition = dge_top$samples$cond, cell = dge_top$samples$cellline),
+  col = list(condition = cond_col, cell = cell_col),
+  show_legend = TRUE)
+
+# create heatmap showing clustering of treated vs. non-treated samples
+current_heatmap <- ComplexHeatmap::Heatmap(as.matrix(heatmap_matrix),
+      top_annotation = hmp_ann,
+      col=heatmap_col,
+      column_title = "Heatmap of Top 100 Hits",
+      show_column_names = TRUE, 
+      show_row_names = FALSE,
+      show_heatmap_legend = TRUE,
+      column_order = col_order[-1])
+
+current_heatmap
+```
+**Figure 9.** Heatmap visualization of the dataset of differential expression for top 100 hits. 
+
+From our heatmap, we do see clustering between conditions, which have been annotated in the heatmap. Interestingly, we also see clustering along cell types.  
+
+
+# Final Conclusions
+
+## 5.1 Final Dataset and Coverage
+
+The required final dataset is a normalized expression matrix with gene HGNC symbols as row names and numeric expression values across each sample as columns. The final coverage for this dataset is 12,696 genes, which provides a suitable coverage for robust transcriptomic analysis. 
+```{r}
+# final dataset
+final_dataset <- as.matrix(dge_f)
+
+# coverage
+coverage <- dim(final_dataset)
+```
+
+
+# Discussion Questions
+
+1. Why is the dataset of interest to you?
+Please see section 1.1: Experimental information.
+
+2. What are the control and test conditions of the dataset?
+Please see section 1.1: Experimental information.
+
+3. How many samples in each of the conditions of your dataset?
+Please see section 1.1: Experimental information.
+
+4. Were there expression values that were not unique for specific genes? How did you handle these?
+Please see sections 2.3: ID Mapping and 2.4: Data Cleaning. 
+
+5. Were there expression values that could not be mapped to current HUGO symbols?
+Please see sections 2.3: ID Mapping and 2.4: Data Cleaning. 
+
+6. Were there any outliers in your dataset? How were they handled in the originating paper? How many outliers were removed?
+Please see sections 2.2: Initial data exploration and summary and 2.4: Data Cleaning. 
+
+7. How did you handle replicates?
+Please see section 2.2: Initial data exploration and summary.
+
+8. What is the final coverage of your dataset?
+Please see section 5.1: Final Dataset and Coverage.
+
+
+# References
+
+Allaire J, Xie Y, Dervieux C, McPherson J, Luraschi J, Ushey K, Atkins A, Wickham H, Cheng J, Chang W, Iannone R (2025). _rmarkdown: Dynamic
+  Documents for R_. R package version 2.30, <https://github.com/rstudio/rmarkdown>.
+
+Benjamini, Y., and Hochberg, Y. (1995). Controlling the false discovery rate: a practical and powerful approach to multiple testing. Journal of the Royal 
+  Statistical Society Series B, 57, 289–300. doi:10.1111/j.2517-6161.1995.tb02031.x.
+
+BioMart and Bioconductor: a powerful link between biological databases and microarray data analysis. Steffen Durinck, Yves Moreau, Arek
+  Kasprzyk, Sean Davis, Bart De Moor, Alvis Brazma and Wolfgang Huber, Bioinformatics 21, 3439-3440 (2005).
+  
+Chen Y, Chen L, Lun ATL, Baldoni P, Smyth GK (2025). “edgeR v4: powerful differential analysis of sequencing data with expanded functionality and improved 
+  support for small counts and larger datasets.” Nucleic Acids Research, 53(2), gkaf018. doi:10.1093/nar/gkaf018. 
+
+Davis S, Meltzer P (2007). “GEOquery: a bridge between the Gene Expression Omnibus (GEO) and BioConductor.” _Bioinformatics_, *14*, 1846-1847.
+  doi:10.1093/bioinformatics/btm254 <https://doi.org/10.1093/bioinformatics/btm254>.
+
+Dill-McFarland, K. A., Simmons, J. D., Peterson, G. J., Nguyen, F. K., Campo, M., Benchek, P., Stein, C. M., Vaisar, T., Mayanja-Kizza, H., Boom, W. H., & Hawn,   T. R. (2024). Epigenetic programming of host lipid metabolism associated with resistance to TST/IGRA conversion after exposure to Mycobacterium tuberculosis.   mSystems, 9(9), e0062824. https://doi.org/10.1128/msystems.00628-24
+
+Gu, Z. (2016) Complex heatmaps reveal patterns and correlations in multidimensional genomic data. Bioinformatics.
+
+Gu, Z. (2014) circlize implements and enhances circular visualization in R. Bioinformatics.
+
+Love, M.I., Huber, W., Anders, S. Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2 Genome Biology 15(12):550
+  (2014)
+
+Maza E. (2016). In Papyro Comparison of TMM (edgeR), RLE (DESeq2), and MRN Normalization Methods for a Simple Two-Conditions-Without-Replicates RNA-Seq   
+  Experimental Design. Frontiers in genetics, 7, 164. https://doi.org/10.3389/fgene.2016.00164
+
+R Core Team (2025). _R: A Language and Environment for Statistical Computing_. R Foundation for Statistical Computing, Vienna, Austria.
+  <https://www.R-project.org/>.
+  
+Ritchie, M.E., Phipson, B., Wu, D., Hu, Y., Law, C.W., Shi, W., and Smyth, G.K. (2015). limma powers differential expression analyses for
+  RNA-sequencing and microarray studies. Nucleic Acids Research 43(7), e47.
+  
+Robinson M. D., Oshlack A. (2010). A scaling normalization method for differential expression analysis of RNA-seq data. Genome Biol. 11:R25. 
+  10.1186/gb-2010-11-3-r25
+
+Seal RL, Braschi B, Gray K, Jones TEM, Tweedie S, Haim-Vilmovsky L, Bruford EA. Genenames.org: the HGNC resources in 2023. Nucleic Acids Res. PMID: 36243972 
+  DOI: 10.1093/nar/gkac888
+  
+Wickham H, François R, Henry L, Müller K, Vaughan D (2026). _dplyr: A Grammar of Data Manipulation_. R package version 1.2.0,
+  <https://dplyr.tidyverse.org>.
+
+Wickham H, Vaughan D, Girlich M (2025). _tidyr: Tidy Messy Data_. doi:10.32614/CRAN.package.tidyr
+  <https://doi.org/10.32614/CRAN.package.tidyr>, R package version 1.3.2, <https://CRAN.R-project.org/package=tidyr>.
+
+Wickham H. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York, 2016.
