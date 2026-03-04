@@ -1,0 +1,20 @@
+The additional dataset I found was contained in the RefSeq database. 
+
+* What sort of data is it? What sort of information does it offer us?
+It contains different types of data, including DNA and mRNA data. It adds additional annotaions regarding the gene, including the location of different relevant sites such as Poly-A site, CDS, and others depending on the gene. 
+An example of a dataset annotated from RefSeq is the dataset "Bauhinia variegata isolate BV-YZ2020 chromosome 14, whole genome shotgun sequence"
+
+* When and where was it published? Was it published?
+RefSeq is supported by the NCBI. This dataset draws on the publication, "Chromosomal-level genome assembly of the orchid tree Bauhiniavariegata (Leguminosae; Cercidoideae) supports the allotetraploid origin hypothesis of Bauhinia" by Zhong et al., published in DNA Research.
+
+* Is this annotation set updated regularly or is it a static source?
+It is a static source, and was last updated June 2022. The general RefSeq database is continually updated as submissions are submitted to the database. 
+
+* Where can I find this data? (link to the download web address or ftp site or publication where it can be found)
+The dataset can be found here: https://www.ncbi.nlm.nih.gov/nuccore/JAKRYI020000014.1.
+
+* How is the data formatted and released? Does it exist in some sort of standard file format?
+It is released as text on the web server, but it is primarily meant to be downloaded as a FASTA file. 
+
+*  What identifiers are associated with these annotations?
+It examines chromosome 14 and has a custom identifier format. It displays the gene, mRNA, and CDS positions for each gene on the chromosome. 
