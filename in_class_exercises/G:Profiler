@@ -1,0 +1,12 @@
+## Homework Assignment: G:Profiler
+I ran G:Profiler on the given ```gene.txt``` file provided and analyzed the returned queryset. 
+
+*Answers*:
+1. The top term in GO was GO:0002376, which corresponds to the immune system process. The top term from Reactome is REAC:R-HSA-16825, which corresponds to the immune system. 
+WikiPathways had a top term of WP:WP2328, which corresponds to allograft rejection. 
+2. 2871 genes were in the GO term. 2085 were in the Reactome term. 88 were in the WikiPathways term.
+3. 292 of our genes were in the term for GO. 220 query genes were in the Reactome term. 32 were in the WikiPathways term.
+4. Yes, it did change the results for GO and Reactome. The new top GO term was GO:0019882, which represents antigen processing and presentation. The new top term for Reactome was REAC:R-HSA-198933
+REAC:R-HSA-198, which represents Immunoregulatory interactions between a Lymphoid and a non-Lymphoid cell. The top term for WikiPathways stayed the same.
+5. It seems likely that this gene set was involved with subtype 3, which is associated with higher immune system reactions and phenotypical presentations. 
+6. It was not found annotated with any of the genesets. 
