@@ -1,0 +1,8 @@
+1. The reason for using the above parameters is to identify more biologically relevant gene sets. Gene sets that are too large in size may provide too general information, 
+  while gene sets that are too small may be overrepresented in terms of significance but not biological relevance. Therefore, it is useful to restrict the gene sets to be 
+  between 15 and 200 in size. 
+2. The top gene set returned for the mesynchemal subtype was "HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION" from MSIGDBHALLMARK with size = 152, NES = 2.56, FDR q-val = 0 and Nom. pvalue = 0.
+  The top gene set returned for the immunoreactive subtype was "HALLMARK_INTERFERON_ALPHA_RESPONSE" from MSIGDBHALLMARK with size = 82, NES = -2.95, FDR q-val = 0 and Nom. p-value = 0.
+    a) See above.     
+    b) There were 85 genes in the leading edge for the mesynchemal subtype. There were 59 genes in the leading edge for the immunoreactive subtype. 
+    c) The top gene associated with the mesynchemal subtype is FBN1. The top gene (as in, the gene with the absolute highest rank metric score) was GBP4 for the immunoreactive subtype. 
