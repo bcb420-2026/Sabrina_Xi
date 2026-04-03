@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 6 Exercises | Normalization (BCB420 Lecture)</title>
+  <meta name="description" content="A short bookdown module introducing normalization for expression data (bulk and single-cell)." />
+  <meta name="generator" content="bookdown 0.46 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 6 Exercises | Normalization (BCB420 Lecture)" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="A short bookdown module introducing normalization for expression data (bulk and single-cell)." />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 6 Exercises | Normalization (BCB420 Lecture)" />
+  
+  <meta name="twitter:description" content="A short bookdown module introducing normalization for expression data (bulk and single-cell)." />
+  
+
+<meta name="author" content="Ruth Isserlin" />
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="worked-normalization-examples.html"/>
+
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+
+
+<style type="text/css">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">BCB420 Lecture 5</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Welcome</a>
+<ul>
+<li class="chapter" data-level="0.1" data-path="index.html"><a href="index.html#learning-goals"><i class="fa fa-check"></i><b>0.1</b> Learning goals</a></li>
+<li class="chapter" data-level="0.2" data-path="index.html"><a href="index.html#example-datasets"><i class="fa fa-check"></i><b>0.2</b> Example datasets</a></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="what-is-normalization.html"><a href="what-is-normalization.html"><i class="fa fa-check"></i><b>1</b> What is normalization?</a></li>
+<li class="chapter" data-level="2" data-path="technical-vs-biological-variation.html"><a href="technical-vs-biological-variation.html"><i class="fa fa-check"></i><b>2</b> Technical vs biological variation</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="technical-vs-biological-variation.html"><a href="technical-vs-biological-variation.html#technical-variation"><i class="fa fa-check"></i><b>2.1</b> Technical variation</a></li>
+<li class="chapter" data-level="2.2" data-path="technical-vs-biological-variation.html"><a href="technical-vs-biological-variation.html#biological-variation"><i class="fa fa-check"></i><b>2.2</b> Biological variation</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="visualizing-distributions.html"><a href="visualizing-distributions.html"><i class="fa fa-check"></i><b>3</b> Visualizing distributions</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="visualizing-distributions.html"><a href="visualizing-distributions.html#load-some-data"><i class="fa fa-check"></i><b>3.1</b> load Some data</a></li>
+<li class="chapter" data-level="3.2" data-path="visualizing-distributions.html"><a href="visualizing-distributions.html#boxplots"><i class="fa fa-check"></i><b>3.2</b> Boxplots</a></li>
+<li class="chapter" data-level="3.3" data-path="visualizing-distributions.html"><a href="visualizing-distributions.html#density-plots"><i class="fa fa-check"></i><b>3.3</b> Density plots</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="normalization-methods.html"><a href="normalization-methods.html"><i class="fa fa-check"></i><b>4</b> Normalization methods</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="normalization-methods.html"><a href="normalization-methods.html#library-size-scaling"><i class="fa fa-check"></i><b>4.1</b> Library-size scaling</a>
+<ul>
+<li class="chapter" data-level="4.1.1" data-path="normalization-methods.html"><a href="normalization-methods.html#counts-per-million-cpm"><i class="fa fa-check"></i><b>4.1.1</b> Counts-per-million (CPM)</a></li>
+</ul></li>
+<li class="chapter" data-level="4.2" data-path="normalization-methods.html"><a href="normalization-methods.html#distribution-based-normalization"><i class="fa fa-check"></i><b>4.2</b> Distribution-based normalization</a></li>
+<li class="chapter" data-level="4.3" data-path="normalization-methods.html"><a href="normalization-methods.html#rna-seq-composition-aware-methods"><i class="fa fa-check"></i><b>4.3</b> RNA-seq composition-aware methods</a>
+<ul>
+<li class="chapter" data-level="4.3.1" data-path="normalization-methods.html"><a href="normalization-methods.html#edger-tmm"><i class="fa fa-check"></i><b>4.3.1</b> edgeR: TMM</a></li>
+<li class="chapter" data-level="4.3.2" data-path="normalization-methods.html"><a href="normalization-methods.html#deseq2-size-factors"><i class="fa fa-check"></i><b>4.3.2</b> DESeq2: size factors</a></li>
+</ul></li>
+<li class="chapter" data-level="4.4" data-path="normalization-methods.html"><a href="normalization-methods.html#single-cell-note"><i class="fa fa-check"></i><b>4.4</b> Single-cell note</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="worked-normalization-examples.html"><a href="worked-normalization-examples.html"><i class="fa fa-check"></i><b>5</b> Worked normalization examples</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="worked-normalization-examples.html"><a href="worked-normalization-examples.html#setup-download-supplementary-files"><i class="fa fa-check"></i><b>5.1</b> Setup: download supplementary files</a></li>
+<li class="chapter" data-level="5.2" data-path="worked-normalization-examples.html"><a href="worked-normalization-examples.html#load-some-data-1"><i class="fa fa-check"></i><b>5.2</b> load Some data</a></li>
+<li class="chapter" data-level="5.3" data-path="worked-normalization-examples.html"><a href="worked-normalization-examples.html#example-1-gse119732"><i class="fa fa-check"></i><b>5.3</b> Example 1: GSE119732</a></li>
+<li class="chapter" data-level="5.4" data-path="worked-normalization-examples.html"><a href="worked-normalization-examples.html#convert-the-raw-counts-to-counts-per-million-cpm"><i class="fa fa-check"></i><b>5.4</b> Convert the raw counts to Counts per million (CPM)</a></li>
+<li class="chapter" data-level="5.5" data-path="worked-normalization-examples.html"><a href="worked-normalization-examples.html#filter-out-lowly-expressed-genes"><i class="fa fa-check"></i><b>5.5</b> filter out lowly expressed genes</a></li>
+<li class="chapter" data-level="5.6" data-path="worked-normalization-examples.html"><a href="worked-normalization-examples.html#incorporate-a-design-matrix---description-of-the-samples."><i class="fa fa-check"></i><b>5.6</b> Incorporate a design matrix - description of the samples.</a></li>
+<li class="chapter" data-level="5.7" data-path="worked-normalization-examples.html"><a href="worked-normalization-examples.html#normalize-dataset-using-tmm"><i class="fa fa-check"></i><b>5.7</b> Normalize Dataset using TMM</a></li>
+<li class="chapter" data-level="5.8" data-path="worked-normalization-examples.html"><a href="worked-normalization-examples.html#look-at-the-distribution-of-our-samples-in-2d-space"><i class="fa fa-check"></i><b>5.8</b> Look at the distribution of our samples in 2D space</a></li>
+<li class="chapter" data-level="5.9" data-path="worked-normalization-examples.html"><a href="worked-normalization-examples.html#normalize-the-dataset-using-rle"><i class="fa fa-check"></i><b>5.9</b> Normalize the Dataset using RLE</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="exercises.html"><a href="exercises.html"><i class="fa fa-check"></i><b>6</b> Exercises</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="exercises.html"><a href="exercises.html#exercise-1-httpswww.ncbi.nlm.nih.govgeoqueryacc.cgiaccgse119732"><i class="fa fa-check"></i><b>6.1</b> Exercise 1 — https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE119732</a></li>
+<li class="chapter" data-level="6.2" data-path="exercises.html"><a href="exercises.html#exercise-2-httpswww.ncbi.nlm.nih.govgeoqueryacc.cgiaccgse122380"><i class="fa fa-check"></i><b>6.2</b> Exercise 2 — https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE122380</a></li>
+<li class="chapter" data-level="6.3" data-path="exercises.html"><a href="exercises.html#exercise-3--"><i class="fa fa-check"></i><b>6.3</b> Exercise 3 -</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Normalization (BCB420 Lecture)</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="exercises" class="section level1 hasAnchor" number="6">
+<h1><span class="header-section-number">Chapter 6</span> Exercises<a href="exercises.html#exercises" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>These are intended to be done <strong>after</strong> completing the worked examples.</p>
+<div id="exercise-1-httpswww.ncbi.nlm.nih.govgeoqueryacc.cgiaccgse119732" class="section level2 hasAnchor" number="6.1">
+<h2><span class="header-section-number">6.1</span> Exercise 1 — <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE119732" class="uri">https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE119732</a><a href="exercises.html#exercise-1-httpswww.ncbi.nlm.nih.govgeoqueryacc.cgiaccgse119732" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Using <strong>GSE119732</strong>,</p>
+<ol style="list-style-type: decimal">
+<li>Map the distribution of the samples as a box plot and a density plot using only the raw data.</li>
+<li>Add colours to the plot separating the different variables in the model</li>
+<li>Filter out lowly expressed genes and re plot the distributions.</li>
+</ol>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="exercises.html#cb55-1" tabindex="-1"></a><span class="co"># get GEO data</span></span>
+<span id="cb55-2"><a href="exercises.html#cb55-2" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">&quot;data&quot;</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb55-3"><a href="exercises.html#cb55-3" tabindex="-1"></a></span>
+<span id="cb55-4"><a href="exercises.html#cb55-4" tabindex="-1"></a>supp <span class="ot">&lt;-</span> GEOquery<span class="sc">::</span><span class="fu">getGEOSuppFiles</span>(</span>
+<span id="cb55-5"><a href="exercises.html#cb55-5" tabindex="-1"></a>  <span class="st">&quot;GSE119732&quot;</span>,</span>
+<span id="cb55-6"><a href="exercises.html#cb55-6" tabindex="-1"></a>  <span class="at">makeDirectory =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb55-7"><a href="exercises.html#cb55-7" tabindex="-1"></a>  <span class="at">baseDir =</span> <span class="st">&quot;data&quot;</span></span>
+<span id="cb55-8"><a href="exercises.html#cb55-8" tabindex="-1"></a>)</span></code></pre></div>
+<pre><code>## Setting options(&#39;download.file.method.GEOquery&#39;=&#39;auto&#39;)</code></pre>
+<pre><code>## Setting options(&#39;GEOquery.inmemory.gpl&#39;=FALSE)</code></pre>
+<pre><code>## Using locally cached version of supplementary file(s) GSE119732 found here:
+## data/GSE119732/GSE119732_count_table_RNA_seq.txt.gz</code></pre>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="exercises.html#cb59-1" tabindex="-1"></a>counts_file <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="st">&quot;data&quot;</span>, <span class="st">&quot;GSE119732&quot;</span>, <span class="st">&quot;GSE119732_count_table_RNA_seq.txt.gz&quot;</span>)</span>
+<span id="cb59-2"><a href="exercises.html#cb59-2" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">file.exists</span>(counts_file))</span>
+<span id="cb59-3"><a href="exercises.html#cb59-3" tabindex="-1"></a></span>
+<span id="cb59-4"><a href="exercises.html#cb59-4" tabindex="-1"></a>raw_counts <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_table</span>(counts_file, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb59-5"><a href="exercises.html#cb59-5" tabindex="-1"></a>raw_counts <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(raw_counts)</span>
+<span id="cb59-6"><a href="exercises.html#cb59-6" tabindex="-1"></a><span class="fu">row.names</span>(raw_counts) <span class="ot">&lt;-</span> raw_counts<span class="sc">$</span>gene_id</span>
+<span id="cb59-7"><a href="exercises.html#cb59-7" tabindex="-1"></a>raw_counts<span class="sc">$</span>gene_id <span class="ot">&lt;-</span> <span class="cn">NULL</span></span></code></pre></div>
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="exercises.html#cb60-1" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb60-2"><a href="exercises.html#cb60-2" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb64-1"><a href="exercises.html#cb64-1" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb64-2"><a href="exercises.html#cb64-2" tabindex="-1"></a></span>
+<span id="cb64-3"><a href="exercises.html#cb64-3" tabindex="-1"></a><span class="co"># suppose &#39;mat&#39; is a gene x sample matrix (numeric)</span></span>
+<span id="cb64-4"><a href="exercises.html#cb64-4" tabindex="-1"></a>plot_box <span class="ot">&lt;-</span> <span class="cf">function</span>(mat, <span class="at">main =</span> <span class="st">&quot;&quot;</span>, <span class="at">ylab =</span> <span class="st">&quot;log2(counts+1)&quot;</span>) {</span>
+<span id="cb64-5"><a href="exercises.html#cb64-5" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(mat)</span>
+<span id="cb64-6"><a href="exercises.html#cb64-6" tabindex="-1"></a>  df_long <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span></span>
+<span id="cb64-7"><a href="exercises.html#cb64-7" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">gene =</span> <span class="fu">rownames</span>(df)) <span class="sc">|&gt;</span></span>
+<span id="cb64-8"><a href="exercises.html#cb64-8" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="sc">-</span>gene, <span class="at">names_to =</span> <span class="st">&quot;sample&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;value&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb64-9"><a href="exercises.html#cb64-9" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">value =</span> <span class="fu">log2</span>(value <span class="sc">+</span> <span class="dv">1</span>))</span>
+<span id="cb64-10"><a href="exercises.html#cb64-10" tabindex="-1"></a></span>
+<span id="cb64-11"><a href="exercises.html#cb64-11" tabindex="-1"></a>  <span class="fu">ggplot</span>(df_long, <span class="fu">aes</span>(<span class="at">x =</span> sample, <span class="at">y =</span> value)) <span class="sc">+</span></span>
+<span id="cb64-12"><a href="exercises.html#cb64-12" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>(<span class="at">outlier.size =</span> <span class="fl">0.2</span>) <span class="sc">+</span></span>
+<span id="cb64-13"><a href="exercises.html#cb64-13" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb64-14"><a href="exercises.html#cb64-14" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">90</span>, <span class="at">vjust =</span> <span class="fl">0.5</span>, <span class="at">hjust =</span> <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb64-15"><a href="exercises.html#cb64-15" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> main, <span class="at">x =</span> <span class="st">&quot;Sample&quot;</span>, <span class="at">y =</span> ylab)</span>
+<span id="cb64-16"><a href="exercises.html#cb64-16" tabindex="-1"></a>}</span>
+<span id="cb64-17"><a href="exercises.html#cb64-17" tabindex="-1"></a></span>
+<span id="cb64-18"><a href="exercises.html#cb64-18" tabindex="-1"></a><span class="co"># define a plot density function</span></span>
+<span id="cb64-19"><a href="exercises.html#cb64-19" tabindex="-1"></a>plot_density <span class="ot">&lt;-</span> <span class="cf">function</span>(input_data, <span class="at">main_title =</span> <span class="st">&quot;Density Function of Read Counts&quot;</span>) {</span>
+<span id="cb64-20"><a href="exercises.html#cb64-20" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(input_data)</span>
+<span id="cb64-21"><a href="exercises.html#cb64-21" tabindex="-1"></a>  df_long <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span></span>
+<span id="cb64-22"><a href="exercises.html#cb64-22" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">gene =</span> <span class="fu">rownames</span>(df)) <span class="sc">|&gt;</span></span>
+<span id="cb64-23"><a href="exercises.html#cb64-23" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="sc">-</span>gene, <span class="at">names_to =</span> <span class="st">&quot;sample&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;value&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb64-24"><a href="exercises.html#cb64-24" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">value =</span> <span class="fu">log2</span>(value <span class="sc">+</span> <span class="dv">1</span>))</span>
+<span id="cb64-25"><a href="exercises.html#cb64-25" tabindex="-1"></a>  </span>
+<span id="cb64-26"><a href="exercises.html#cb64-26" tabindex="-1"></a>  <span class="fu">ggplot</span>(df_long, <span class="fu">aes</span>(<span class="at">x =</span> value, <span class="at">colour =</span> sample)) <span class="sc">+</span></span>
+<span id="cb64-27"><a href="exercises.html#cb64-27" tabindex="-1"></a>    <span class="fu">geom_density</span>() <span class="sc">+</span></span>
+<span id="cb64-28"><a href="exercises.html#cb64-28" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb64-29"><a href="exercises.html#cb64-29" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> main_title, <span class="at">x =</span> <span class="st">&quot;log2(counts+1)&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Density&quot;</span>)</span>
+<span id="cb64-30"><a href="exercises.html#cb64-30" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="exercises.html#cb65-1" tabindex="-1"></a><span class="co"># check boxplot distribution of the current dataset</span></span>
+<span id="cb65-2"><a href="exercises.html#cb65-2" tabindex="-1"></a><span class="fu">plot_box</span>(raw_counts, <span class="st">&quot;Figure 1. Boxplot of Raw Read Counts from Dataset GSE119732&quot;</span>)</span></code></pre></div>
+<p><img src="06-exercises_files/figure-html/unnamed-chunk-3-1.png" alt="" width="672" /></p>
+<div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb66-1"><a href="exercises.html#cb66-1" tabindex="-1"></a><span class="co"># check density distribution of the current dataset</span></span>
+<span id="cb66-2"><a href="exercises.html#cb66-2" tabindex="-1"></a><span class="fu">plot_density</span>(raw_counts, <span class="st">&quot;Figure 2. Density Function of Raw Read Counts from Dataset GSE119732&quot;</span>)</span></code></pre></div>
+<p><img src="06-exercises_files/figure-html/unnamed-chunk-4-1.png" alt="" width="672" /></p>
+<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="exercises.html#cb67-1" tabindex="-1"></a><span class="fu">library</span>(edgeR)</span></code></pre></div>
+<pre><code>## Loading required package: limma</code></pre>
+<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="exercises.html#cb69-1" tabindex="-1"></a>dge <span class="ot">&lt;-</span> <span class="fu">DGEList</span>(<span class="at">counts =</span> raw_counts)</span>
+<span id="cb69-2"><a href="exercises.html#cb69-2" tabindex="-1"></a>dge <span class="ot">&lt;-</span> <span class="fu">calcNormFactors</span>(dge, <span class="at">method =</span> <span class="st">&quot;TMM&quot;</span>)</span>
+<span id="cb69-3"><a href="exercises.html#cb69-3" tabindex="-1"></a>normcpm <span class="ot">&lt;-</span> <span class="fu">cpm</span>(dge, <span class="at">prior.count =</span> <span class="dv">1</span>)</span>
+<span id="cb69-4"><a href="exercises.html#cb69-4" tabindex="-1"></a></span>
+<span id="cb69-5"><a href="exercises.html#cb69-5" tabindex="-1"></a><span class="fu">plot_box</span>(normcpm, <span class="st">&quot;Figure 3. Boxplot of Normalized Read Counts from Dataset GSE119732&quot;</span>)</span></code></pre></div>
+<p><img src="06-exercises_files/figure-html/unnamed-chunk-5-1.png" alt="" width="672" /></p>
+<div class="sourceCode" id="cb70"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb70-1"><a href="exercises.html#cb70-1" tabindex="-1"></a><span class="fu">plot_density</span>(normcpm, <span class="st">&quot;Figure 3. Density plot of Normalized Read Counts from Dataset GSE119732&quot;</span>)</span></code></pre></div>
+<p><img src="06-exercises_files/figure-html/unnamed-chunk-6-1.png" alt="" width="672" /></p>
+</div>
+<div id="exercise-2-httpswww.ncbi.nlm.nih.govgeoqueryacc.cgiaccgse122380" class="section level2 hasAnchor" number="6.2">
+<h2><span class="header-section-number">6.2</span> Exercise 2 — <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE122380" class="uri">https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE122380</a><a href="exercises.html#exercise-2-httpswww.ncbi.nlm.nih.govgeoqueryacc.cgiaccgse122380" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Using <strong>GSE122380</strong>, confirm whether the ID column contains Ensembl IDs with version suffixes.</p>
+<ol style="list-style-type: decimal">
+<li>Map the distribution of the samples as a box plot and a density plot using only the raw data.</li>
+<li>Add colours to the plot separating the different variables in the model</li>
+<li>Filter out lowly expressed genes and re plot the distributions.</li>
+</ol>
+<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="exercises.html#cb71-1" tabindex="-1"></a><span class="co"># get GEO data</span></span>
+<span id="cb71-2"><a href="exercises.html#cb71-2" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">&quot;data&quot;</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb71-3"><a href="exercises.html#cb71-3" tabindex="-1"></a></span>
+<span id="cb71-4"><a href="exercises.html#cb71-4" tabindex="-1"></a>supp <span class="ot">&lt;-</span> GEOquery<span class="sc">::</span><span class="fu">getGEOSuppFiles</span>(</span>
+<span id="cb71-5"><a href="exercises.html#cb71-5" tabindex="-1"></a>  <span class="st">&quot;GSE122380&quot;</span>,</span>
+<span id="cb71-6"><a href="exercises.html#cb71-6" tabindex="-1"></a>  <span class="at">makeDirectory =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb71-7"><a href="exercises.html#cb71-7" tabindex="-1"></a>  <span class="at">baseDir =</span> <span class="st">&quot;data&quot;</span></span>
+<span id="cb71-8"><a href="exercises.html#cb71-8" tabindex="-1"></a>)</span></code></pre></div>
+<pre><code>## Using locally cached version of supplementary file(s) GSE122380 found here:
+## data/GSE122380/GSE122380_raw_counts.txt.gz</code></pre>
+<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="exercises.html#cb73-1" tabindex="-1"></a>counts_file <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="st">&quot;data&quot;</span>, <span class="st">&quot;GSE122380&quot;</span>, <span class="st">&quot;GSE122380_raw_counts.txt.gz&quot;</span>)</span>
+<span id="cb73-2"><a href="exercises.html#cb73-2" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">file.exists</span>(counts_file))</span>
+<span id="cb73-3"><a href="exercises.html#cb73-3" tabindex="-1"></a></span>
+<span id="cb73-4"><a href="exercises.html#cb73-4" tabindex="-1"></a>raw_counts <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_table</span>(counts_file, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb73-5"><a href="exercises.html#cb73-5" tabindex="-1"></a>raw_counts <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(raw_counts)</span>
+<span id="cb73-6"><a href="exercises.html#cb73-6" tabindex="-1"></a><span class="fu">row.names</span>(raw_counts) <span class="ot">&lt;-</span> raw_counts<span class="sc">$</span>Gene_id</span>
+<span id="cb73-7"><a href="exercises.html#cb73-7" tabindex="-1"></a>raw_counts<span class="sc">$</span>Gene_id <span class="ot">&lt;-</span> <span class="cn">NULL</span></span></code></pre></div>
+<div class="sourceCode" id="cb74"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb74-1"><a href="exercises.html#cb74-1" tabindex="-1"></a><span class="co"># check boxplot distribution of the current dataset</span></span>
+<span id="cb74-2"><a href="exercises.html#cb74-2" tabindex="-1"></a><span class="fu">plot_box</span>(raw_counts[, <span class="dv">2</span><span class="sc">:</span><span class="dv">20</span>], <span class="st">&quot;Figure 1. Boxplot of Raw Read Counts from Dataset GSE122380&quot;</span>)</span></code></pre></div>
+<p><img src="06-exercises_files/figure-html/unnamed-chunk-8-1.png" alt="" width="672" /></p>
+<div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb75-1"><a href="exercises.html#cb75-1" tabindex="-1"></a><span class="co"># check density distribution of the current dataset</span></span>
+<span id="cb75-2"><a href="exercises.html#cb75-2" tabindex="-1"></a><span class="fu">plot_density</span>(raw_counts[, <span class="dv">2</span><span class="sc">:</span><span class="dv">10</span>], <span class="st">&quot;Figure 2. Density Function of Raw Read Counts from Dataset GSE122380&quot;</span>)</span></code></pre></div>
+<p><img src="06-exercises_files/figure-html/unnamed-chunk-9-1.png" alt="" width="672" /></p>
+<div class="sourceCode" id="cb76"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb76-1"><a href="exercises.html#cb76-1" tabindex="-1"></a><span class="fu">library</span>(edgeR)</span>
+<span id="cb76-2"><a href="exercises.html#cb76-2" tabindex="-1"></a></span>
+<span id="cb76-3"><a href="exercises.html#cb76-3" tabindex="-1"></a>dge <span class="ot">&lt;-</span> <span class="fu">DGEList</span>(<span class="at">counts =</span> raw_counts)</span>
+<span id="cb76-4"><a href="exercises.html#cb76-4" tabindex="-1"></a>dge <span class="ot">&lt;-</span> <span class="fu">calcNormFactors</span>(dge, <span class="at">method =</span> <span class="st">&quot;TMM&quot;</span>)</span>
+<span id="cb76-5"><a href="exercises.html#cb76-5" tabindex="-1"></a>normcpm <span class="ot">&lt;-</span> <span class="fu">cpm</span>(dge, <span class="at">prior.count =</span> <span class="dv">1</span>)</span>
+<span id="cb76-6"><a href="exercises.html#cb76-6" tabindex="-1"></a></span>
+<span id="cb76-7"><a href="exercises.html#cb76-7" tabindex="-1"></a><span class="fu">plot_box</span>(normcpm[, <span class="dv">2</span><span class="sc">:</span><span class="dv">20</span>], <span class="st">&quot;Figure 3. Boxplot of Normalized Read Counts from Dataset GSE122380&quot;</span>)</span></code></pre></div>
+<p><img src="06-exercises_files/figure-html/unnamed-chunk-10-1.png" alt="" width="672" /></p>
+<div class="sourceCode" id="cb77"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb77-1"><a href="exercises.html#cb77-1" tabindex="-1"></a><span class="fu">plot_density</span>(normcpm[, <span class="dv">2</span><span class="sc">:</span><span class="dv">10</span>], <span class="st">&quot;Figure 3. Density plot of Normalized Read Counts from Dataset GSE122380&quot;</span>)</span></code></pre></div>
+<p><img src="06-exercises_files/figure-html/unnamed-chunk-11-1.png" alt="" width="672" /></p>
+</div>
+<div id="exercise-3--" class="section level2 hasAnchor" number="6.3">
+<h2><span class="header-section-number">6.3</span> Exercise 3 -<a href="exercises.html#exercise-3--" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Can you use the worked example to process the above two GEO records? How?</p>
+<p>Yes, but I had to make some slight changes. However, the normalization process was quite similar for both and successfully led to the normalization of these datasets. In terms of plotting, the second dataset had many more samples so plotting the values was easier with a subset of the data.</p>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="worked-normalization-examples.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+  "sharing": {
+    "github": false,
+    "facebook": true,
+    "twitter": true,
+    "linkedin": false,
+    "weibo": false,
+    "instapaper": false,
+    "vk": false,
+    "whatsapp": false,
+    "all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+  },
+  "fontsettings": {
+    "theme": "white",
+    "family": "sans",
+    "size": 2
+  },
+  "edit": {
+    "link": null,
+    "text": null
+  },
+  "history": {
+    "link": null,
+    "text": null
+  },
+  "view": {
+    "link": null,
+    "text": null
+  },
+  "download": ["bcb420_normalization.pdf", "bcb420_normalization.epub"],
+  "search": {
+    "engine": "fuse",
+    "options": null
+  },
+  "toc": {
+    "collapse": "section"
+  }
+});
+});
+</script>
+
+</body>
+
+</html>
